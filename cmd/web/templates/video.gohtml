@@ -6,13 +6,13 @@
         <div>Error: no video urls are available!!!</div>
     {{end}}
     <video id="video"
-           poster="{{ .Video.Image_url }}"
+           poster="{{.Video.Image_url}}"
            controls style="background:black">
-        {{ range .VideoUrls }}
+        {{range .VideoUrls}}
             <source label="{{.Quality}}" src="{{.Mp4url}}" type="video/mp4"/>
         {{end}}
     </video>
     <div class="video-description">
-        {{ .Video.Description }}
+        {{.Video.Description}}
     </div>
 {{end}}

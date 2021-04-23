@@ -70,7 +70,7 @@ func index(w http.ResponseWriter, req *http.Request) {
 		Videos:   videos,
 	}
 
-	err = render(w, "index.html", data)
+	err = render(w, "index.gohtml", data)
 	if err != nil {
 		helpers.InternalError(w, err)
 	}
@@ -96,14 +96,14 @@ func video(w http.ResponseWriter, req *http.Request) {
 	}
 	data := VideoTemplateData{Video: video, VideoUrls: urls}
 
-	err = render(w, "video.html", data)
+	err = render(w, "video.gohtml", data)
 	if err != nil {
 		helpers.InternalError(w, err)
 	}
 }
 
 func render(w http.ResponseWriter, tpl string, data interface{}) error {
-	templatesNames := []string{"cmd/web/templates/base.html", "cmd/web/templates/styles.html"}
+	templatesNames := []string{"cmd/web/templates/base.gohtml", "cmd/web/templates/styles.gohtml"}
 	templatesNames = append(templatesNames, "cmd/web/templates/"+tpl)
 	templates := template.Must(template.ParseFiles(templatesNames...))
 	return templates.ExecuteTemplate(w, tpl, data)

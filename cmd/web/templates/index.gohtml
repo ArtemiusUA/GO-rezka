@@ -8,16 +8,16 @@
     </div>
     {{if .Q }}
         <div class="search-q">
-            <h4>Search results for: {{ .Q }} <a href="/">(clear...)</a></h4>
+            <h4>Search results for: {{.Q}} <a href="/">(clear...)</a></h4>
         </div>
     {{end}}
     <div class="videos">
         {{range .Videos}}
         <div class="video-item">
-            <a href="/videos/{{ .Id }}">
-                <img src="{{ .Image_url }}">
+            <a href="/videos/{{.Id}}">
+                <img src="{{.Image_url}}">
                 <div class="name">
-                    {{ .Name }}
+                    {{.Name}}
                 </div>
             </a>
         </div>
@@ -27,26 +27,26 @@
         <h5>
             {{if gt .Page  1 }}
                 {{if .GenreId }}
-                    <a href="/?genre_id={{ .GenreId }}&page={{ .PrevPage }}">&lt;&lt;</a>
+                    <a href="/?genre_id={{.GenreId}}&page={{.PrevPage}}">&lt;&lt;</a>
                 {{else}}
                     {{if .Q}}
-                        <a href="/?q={{ .Q }}&page={{ .PrevPage }}">&lt;&lt;</a>
+                        <a href="/?q={{.Q}}&page={{.PrevPage}}">&lt;&lt;</a>
                     {{else}}
-                        <a href="/?page={{ .PrevPage }}">&lt;&lt;</a>
+                        <a href="/?page={{.PrevPage}}">&lt;&lt;</a>
                     {{end}}
                 {{ end }}
             {{else}}
             &lt;&lt;
             {{ end }}
-            {{ .Page }} / {{ .Pages }}
-            {{if lt .Page  .Pages }}
-                {{if .GenreId }}
-                    <a href="/?genre_id={{ .GenreId }}&page={{ .NextPage }}">&gt;&gt;</a>
+            {{.Page}} / {{.Pages}}
+            {{if lt .Page  .Pages}}
+                {{if .GenreId}}
+                    <a href="/?genre_id={{.GenreId}}&page={{.NextPage}}">&gt;&gt;</a>
                 {{else}}
                     {{if .Q}}
-                    <a href="/?q={{ .Q }}&page={{ .NextPage }}">&gt;&gt;</a>
+                    <a href="/?q={{ .Q }}&page={{.NextPage}}">&gt;&gt;</a>
                     {{else}}
-                    <a href="/?page={{ .NextPage }}">&gt;&gt;</a>
+                    <a href="/?page={{.NextPage}}">&gt;&gt;</a>
                     {{end}}
                 {{ end }}
             {{else}}
