@@ -1,0 +1,57 @@
+{{template "base" .}}
+{{define "title"}}GO rezka{{end}}
+{{define "content"}}
+    <div class="nav right genres">
+        {{range .Genres}}
+        <h6 class="nav-item {{if eq .Id $.GenreId}}active-genre{{end}}"><a href="/?genre_id={{.Id}}">{{ .Name }}</a></h6>
+        {{end}}
+    </div>
+    {{if .Q }}
+        <div class="search-q">
+            <h4>Search results for: {{ .Q }} <a href="/">(clear...)</a></h4>
+        </div>
+    {{end}}
+    <div class="videos">
+        {{range .Videos}}
+        <div class="video-item">
+            <a href="/videos/{{ .Id }}">
+                <img src="{{ .Image_url }}">
+                <div class="name">
+                    {{ .Name }}
+                </div>
+            </a>
+        </div>
+        {{end}}
+    </div>
+    <div class="pages text-center">
+        <h5>
+            {{if gt .Page  1 }}
+                {{if .GenreId }}
+                    <a href="/?genre_id={{ .GenreId }}&page={{ .PrevPage }}">&lt;&lt;</a>
+                {{else}}
+                    {{if .Q}}
+                        <a href="/?q={{ .Q }}&page={{ .PrevPage }}">&lt;&lt;</a>
+                    {{else}}
+                        <a href="/?page={{ .PrevPage }}">&lt;&lt;</a>
+                    {{end}}
+                {{ end }}
+            {{else}}
+            &lt;&lt;
+            {{ end }}
+            {{ .Page }} / {{ .Pages }}
+            {{if lt .Page  .Pages }}
+                {{if .GenreId }}
+                    <a href="/?genre_id={{ .GenreId }}&page={{ .NextPage }}">&gt;&gt;</a>
+                {{else}}
+                    {{if .Q}}
+                    <a href="/?q={{ .Q }}&page={{ .NextPage }}">&gt;&gt;</a>
+                    {{else}}
+                    <a href="/?page={{ .NextPage }}">&gt;&gt;</a>
+                    {{end}}
+                {{ end }}
+            {{else}}
+            &gt;&gt;
+            {{end}}
+        </h5>
+    </div>
+{{end}}

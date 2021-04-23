@@ -1,0 +1,22 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{block "title" .}}FY rezka{{end}}</title>
+    {{template "styles" .}}
+</head>
+<body>
+    <div class="container center">
+        <div class="nav header">
+            <h1 class="nav-logo"><a href="/">GO rezka</a></h1>
+            <form action="/" method="get">
+                <div class="nav-item"><input name="q" type="text" placeholder="Search..."></div>
+            </form>
+        </div>
+        {{block "content" .}}
+        {{end}}
+        </div>
+    </body>
+</html>
+{{end}}

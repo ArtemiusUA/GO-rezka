@@ -1,0 +1,18 @@
+{{template "base" .}}
+{{define "title"}}{{.Video.Name}} / {{.Video.Name_orig}}{{end}}
+{{define "content"}}
+    <h3>{{.Video.Name}} / {{.Video.Name_orig}}</h3>
+    {{if not .Video.Video_urls}}
+        <div>Error: no video urls are available!!!</div>
+    {{end}}
+    <video id="video"
+           poster="{{ .Video.Image_url }}"
+           controls style="background:black">
+        {{ range .VideoUrls }}
+            <source label="{{.Quality}}" src="{{.Mp4url}}" type="video/mp4"/>
+        {{end}}
+    </video>
+    <div class="video-description">
+        {{ .Video.Description }}
+    </div>
+{{end}}
