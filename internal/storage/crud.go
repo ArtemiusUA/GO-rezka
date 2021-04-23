@@ -1,8 +1,11 @@
 package storage
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
-const DEFAULT_VIDEOS_BATCH = 12
+const DefaultVideosBatch = 12
 
 func ListGenres() (genres []Genre, err error) {
 	db, err := GetDB()
@@ -34,16 +37,16 @@ func ListVideos(page int, genreId int, q string) (videos []Video, err error) {
 			WHERE 1=1 `
 
 	if genreId != 0 {
-		sql = sql + " AND videos_genres.genre_id = $1 "
 		params = append(params, genreId)
+		sql = sql + fmt.Sprintf(" AND videos_genres.genre_id = $%v ", len(params))
 	}
 
 	if q != "" {
-		sql = sql + " AND videos.name ilike $2 "
-		params = append(params, q)
+		params = append(params, `%`+q+`%`)
+		sql = sql + fmt.Sprintf(" AND videos.name ilike $%v ", len(params))
 	}
 
-	sql = sql + " ORDER BY videos.rating DESC LIMIT " + strconv.Itoa(DEFAULT_VIDEOS_BATCH)
+	sql = sql + " ORDER BY videos.rating DESC LIMIT " + strconv.Itoa(DefaultVideosBatch)
 
 	err = db.Select(&videos, sql, params...)
 	if err != nil {
@@ -67,13 +70,13 @@ func GetVideosPages(genreId int, q string) (pages int, err error) {
 			WHERE 1=1 `
 
 	if genreId != 0 {
-		sql = sql + " AND videos_genres.genre_id = $1 "
 		params = append(params, genreId)
+		sql = sql + fmt.Sprintf(" AND videos_genres.genre_id = $%v ", len(params))
 	}
 
 	if q != "" {
-		sql = sql + " AND videos.name ilike $2 "
-		params = append(params, q)
+		params = append(params, `%`+q+`%`)
+		sql = sql + fmt.Sprintf(" AND videos.name ilike $%v ", len(params))
 	}
 
 	var videosQty int
@@ -83,7 +86,7 @@ func GetVideosPages(genreId int, q string) (pages int, err error) {
 		return 0, err
 	}
 
-	pages = videosQty/DEFAULT_VIDEOS_BATCH + 1
+	pages = videosQty/DefaultVideosBatch + 1
 
 	return pages, nil
 }
