@@ -1,15 +1,15 @@
 package helpers
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
 func InternalError(w http.ResponseWriter, err error) {
 	message := "Internal error"
-	if !IsDebug() {
+	if IsDebug() {
 		message = err.Error()
 	}
-	log.Println(err.Error())
+	log.Error(err.Error())
 	http.Error(w, message, 500)
 }

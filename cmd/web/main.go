@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 	"go_rezka/internal/helpers"
 	"go_rezka/internal/storage"
-	"log"
 	"net/http"
 	"strconv"
 	"text/template"
@@ -92,7 +92,7 @@ func video(w http.ResponseWriter, req *http.Request) {
 
 	urls, err := video.GetUrls()
 	if err != nil {
-		log.Printf("Error parsing urls for: %v", videoId)
+		log.Warningf("Error parsing urls for: %v", videoId)
 	}
 	data := VideoTemplateData{Video: video, VideoUrls: urls}
 
