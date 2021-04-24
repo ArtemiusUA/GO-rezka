@@ -3,10 +3,12 @@ package storage
 import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
+	"os"
 )
 
 func GetDB() (db *sqlx.DB, err error) {
-	db, err = sqlx.Open("pgx", "postgres://postgres:pass@localhost:5432/video_aggregator?sslmode=disable")
+	databaseUrl := os.Getenv("DATABASE_URL")
+	db, err = sqlx.Open("pgx", databaseUrl)
 	if err != nil {
 		return nil, err
 	}
