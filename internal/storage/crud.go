@@ -7,10 +7,25 @@ import (
 
 const DefaultVideosBatch = 12
 
+func createGenre(name string) (genre Genre, err error) {
+	db, err := GetDB()
+	if err != nil {
+		return
+	}
+
+	sql := "INSERT INTO genres(name) VALUES ($1) ON CONFLICT DO NOTHING"
+	_, err = db.NamedExec(sql, name)
+
+	sql = "SELECT * FROM genres WHERE name = $1"
+	err = db.Get(&genre, sql, name)
+
+	return
+}
+
 func ListGenres() (genres []Genre, err error) {
 	db, err := GetDB()
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	sql := `SELECT * FROM genres`
@@ -20,13 +35,13 @@ func ListGenres() (genres []Genre, err error) {
 		return nil, err
 	}
 
-	return genres, nil
+	return
 }
 
 func ListVideos(page int, genreId int, q string) (videos []Video, err error) {
 	db, err := GetDB()
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	var params []interface{}
@@ -50,16 +65,16 @@ func ListVideos(page int, genreId int, q string) (videos []Video, err error) {
 
 	err = db.Select(&videos, sql, params...)
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	return videos, nil
+	return
 }
 
 func GetVideosPages(genreId int, q string) (pages int, err error) {
 	db, err := GetDB()
 	if err != nil {
-		return 0, err
+		return
 	}
 
 	var params []interface{}
@@ -83,26 +98,26 @@ func GetVideosPages(genreId int, q string) (pages int, err error) {
 
 	err = db.Get(&videosQty, sql, params...)
 	if err != nil {
-		return 0, err
+		return
 	}
 
 	pages = videosQty/DefaultVideosBatch + 1
 
-	return pages, nil
+	return
 }
 
 func GetVideo(videoId int) (video Video, err error) {
 	db, err := GetDB()
 	if err != nil {
-		return video, err
+		return
 	}
 
 	sql := `SELECT * FROM videos WHERE id = $1`
 
 	err = db.Get(&video, sql, videoId)
 	if err != nil {
-		return video, err
+		return
 	}
 
-	return video, nil
+	return
 }
