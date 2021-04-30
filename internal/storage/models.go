@@ -17,7 +17,7 @@ type Video struct {
 	Url         string
 	Image_url   string
 	Description string
-	Rating      float32
+	Rating      float64
 	Video_urls  string
 }
 
