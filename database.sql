@@ -35,7 +35,8 @@ create table videos_genres
             references videos,
     genre_id integer not null
         constraint videos_genres_genre_id_fkey
-            references genres
+            references genres,
+    unique(video_id, genre_id)
 );
 
 alter table videos_genres owner to postgres;

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/gocolly/colly/v2"
+	"github.com/jmoiron/sqlx/types"
 	log "github.com/sirupsen/logrus"
 	"go_rezka/internal/storage"
 	"regexp"
@@ -36,11 +37,16 @@ func main() {
 		log.Infof("Visiting: %v", r.URL.String())
 	})
 	videoCollector.OnHTML(".b-post", func(e *colly.HTMLElement) {
-		name := e.ChildText(".b-content__main [itemprop=name]")
+		name := e.ChildText(".b-content__main .b-post__title [itemprop=name]")
 		nameOrig := e.ChildText(".b-content__main [itemprop=alternativeHeadline]")
 		url := e.ChildAttr("[itemprop=url]", "content")
 		imageUrl := e.ChildAttr("[itemprop=image]", "src")
-		//genres := e.ChildTexts("[itemprop=genre]")
+		genres_names := e.ChildTexts("[itemprop=genre]")
+		var genres []storage.Genre
+		for _, g := range genres_names {
+			genres = append(genres, storage.Genre{Name: g})
+		}
+
 		description := e.ChildText(".b-post__description_text")
 		rating, _ := strconv.ParseFloat(e.ChildText(".b-post__info_rates.imdb span"), 64)
 
@@ -56,7 +62,7 @@ func main() {
 			urls = append(urls, storage.VideoUrl{quality, mp4url, m3u8url})
 		}
 
-		urlsDump, _ := json.Marshal(urls)
+		urlsJSONText, _ := json.Marshal(urls)
 
 		video := storage.Video{
 			0,
@@ -66,10 +72,32 @@ func main() {
 			imageUrl,
 			description,
 			rating,
-			string(urlsDump),
+			types.JSONText(urlsJSONText),
 		}
 
-		log.Infof("Persed video: %v", video)
+		err := storage.SaveVideo(&video)
+		if err != nil {
+			log.Error("Error: %v", err)
+			log.Fatal(err)
+			return
+		}
+
+		for _, genre := range genres {
+			err = storage.SaveGenre(&genre)
+			if err != nil {
+				log.Error("Error: %v", err)
+				log.Fatal(err)
+				return
+			}
+			err = storage.SaveVideoGenre(&video, &genre)
+			if err != nil {
+				log.Error("Error: %v", err)
+				log.Fatal(err)
+				return
+			}
+		}
+
+		log.Infof("Parsed video: %v", video)
 
 	})
 

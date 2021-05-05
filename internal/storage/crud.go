@@ -7,17 +7,20 @@ import (
 
 const DefaultVideosBatch = 12
 
-func createGenre(name string) (genre Genre, err error) {
+func SaveGenre(genre *Genre) (err error) {
 	db, err := GetDB()
 	if err != nil {
 		return
 	}
 
-	sql := "INSERT INTO genres(name) VALUES ($1) ON CONFLICT DO NOTHING"
-	_, err = db.NamedExec(sql, name)
+	sql := "INSERT INTO genres(name) VALUES (:name) ON CONFLICT (name) DO NOTHING"
+	_, err = db.NamedExec(sql, genre)
+	if err != nil {
+		return
+	}
 
-	sql = "SELECT * FROM genres WHERE name = $1"
-	err = db.Get(&genre, sql, name)
+	sql = "SELECT * FROM genres WHERE name = $1 LIMIT 1"
+	err = db.Get(genre, sql, genre.Name)
 
 	return
 }
@@ -36,6 +39,51 @@ func ListGenres() (genres []Genre, err error) {
 	}
 
 	return
+}
+
+func SaveVideo(video *Video) (err error) {
+
+	db, err := GetDB()
+	if err != nil {
+		return
+	}
+
+	sql := `INSERT INTO videos(name, name_orig, url, image_url, description, rating, video_urls)
+		 VALUES (:name, :name_orig, :url, :image_url, :description, :rating, :video_urls)
+		 ON CONFLICT (name) DO 
+		 UPDATE SET 
+		     name_orig = EXCLUDED.name_orig, 
+		     url = EXCLUDED.url, 
+		     image_url = EXCLUDED.image_url, 
+		     description = EXCLUDED.description, 
+		     rating = EXCLUDED.rating, 
+		     video_urls = EXCLUDED.video_urls`
+	_, err = db.NamedExec(sql, video)
+	if err != nil {
+		return
+	}
+
+	sql = "SELECT * FROM videos WHERE name = $1 LIMIT 1"
+	err = db.Get(video, sql, video.Name)
+
+	return
+
+}
+
+func SaveVideoGenre(video *Video, genre *Genre) (err error) {
+	db, err := GetDB()
+	if err != nil {
+		return
+	}
+
+	sql := `INSERT INTO videos_genres(video_id, genre_id) 
+			VALUES ($1, $2) ON CONFLICT (video_id, genre_id) DO NOTHING`
+	_, err = db.Exec(sql, video.Id, genre.Id)
+	if err != nil {
+		return
+	}
+
+	return nil
 }
 
 func ListVideos(page int, genreId int, q string) (videos []Video, err error) {

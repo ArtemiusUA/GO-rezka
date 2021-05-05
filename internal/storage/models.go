@@ -2,6 +2,7 @@ package storage
 
 import (
 	"encoding/json"
+	"github.com/jmoiron/sqlx/types"
 	"go_rezka/internal/helpers"
 )
 
@@ -18,7 +19,7 @@ type Video struct {
 	Image_url   string
 	Description string
 	Rating      float64
-	Video_urls  string
+	Video_urls  types.JSONText
 }
 
 type VideoUrl struct {
