@@ -27,6 +27,11 @@ type VideoTemplateData struct {
 }
 
 func main() {
+	err := storage.InitDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	router := mux.NewRouter()
 	router.HandleFunc("/", index)
 	router.HandleFunc("/videos/{id:[0-9]+}", video)

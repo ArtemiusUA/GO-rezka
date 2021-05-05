@@ -9,9 +9,15 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func main() {
+	err := storage.InitDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	baseCollector := colly.NewCollector(
 		// Visit only domains: coursera.org, www.coursera.org
 		colly.AllowedDomains("rezka.ag", "www.rezka.ag"),
@@ -22,7 +28,12 @@ func main() {
 			regexp.MustCompile(`https://rezka\.ag/films/.+/.+\.html`),
 		),
 	)
-	videoCollector := colly.NewCollector()
+	videoCollector := colly.NewCollector(colly.Async(true))
+	videoCollector.Limit(&colly.LimitRule{
+		DomainGlob:  "*",
+		Parallelism: 3,
+		RandomDelay: time.Millisecond * 100,
+	})
 
 	baseCollector.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		link := e.Attr("href")
@@ -34,7 +45,7 @@ func main() {
 	})
 
 	videoCollector.OnRequest(func(r *colly.Request) {
-		log.Infof("Visiting: %v", r.URL.String())
+		log.Debugf("Visiting: %v", r.URL.String())
 	})
 	videoCollector.OnHTML(".b-post", func(e *colly.HTMLElement) {
 		name := e.ChildText(".b-content__main .b-post__title [itemprop=name]")
@@ -50,7 +61,12 @@ func main() {
 		description := e.ChildText(".b-post__description_text")
 		rating, _ := strconv.ParseFloat(e.ChildText(".b-post__info_rates.imdb span"), 64)
 
-		streams := string(regexp.MustCompile(`streams\":\"((.)+?)\",`).FindSubmatch(e.Response.Body)[1])
+		streamsContent := regexp.MustCompile(`streams\":\"((.)+?)\",`).FindSubmatch(e.Response.Body)
+		if streamsContent == nil || len(streamsContent) == 0 {
+			log.Warningf("No streams for: %v", url)
+			return
+		}
+		streams := string(streamsContent[1])
 		parts := strings.Split(streams, ",")
 		var urls []storage.VideoUrl
 		for _, p := range parts {
@@ -78,7 +94,6 @@ func main() {
 		err := storage.SaveVideo(&video)
 		if err != nil {
 			log.Error("Error: %v", err)
-			log.Fatal(err)
 			return
 		}
 
@@ -86,22 +101,23 @@ func main() {
 			err = storage.SaveGenre(&genre)
 			if err != nil {
 				log.Error("Error: %v", err)
-				log.Fatal(err)
 				return
 			}
 			err = storage.SaveVideoGenre(&video, &genre)
 			if err != nil {
 				log.Error("Error: %v", err)
-				log.Fatal(err)
 				return
 			}
 		}
 
-		log.Infof("Parsed video: %v", video)
+		log.Infof("Parsed video: %v", url)
 
 	})
+	videoCollector.OnError(func(r *colly.Response, err error) {
+		log.Errorf("Error parsing: %v, %v", r.Request.URL, err)
+	})
 
-	err := baseCollector.Visit("https://rezka.ag/films/")
+	err = baseCollector.Visit("https://rezka.ag/films/")
 	if err != nil {
 		log.Fatal(err)
 	}
