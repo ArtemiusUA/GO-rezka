@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func main() {
@@ -28,12 +27,7 @@ func main() {
 			regexp.MustCompile(`https://rezka\.ag/films/.+/.+\.html`),
 		),
 	)
-	videoCollector := colly.NewCollector(colly.Async(true))
-	videoCollector.Limit(&colly.LimitRule{
-		DomainGlob:  "*",
-		Parallelism: 3,
-		RandomDelay: time.Millisecond * 100,
-	})
+	videoCollector := colly.NewCollector()
 
 	baseCollector.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		link := e.Attr("href")
