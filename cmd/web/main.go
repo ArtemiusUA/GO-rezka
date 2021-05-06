@@ -6,6 +6,8 @@ import (
 	"go_rezka/internal/helpers"
 	"go_rezka/internal/storage"
 	"net/http"
+	"os"
+	"path"
 	"strconv"
 	"text/template"
 )
@@ -108,8 +110,14 @@ func video(w http.ResponseWriter, req *http.Request) {
 }
 
 func render(w http.ResponseWriter, tpl string, data interface{}) error {
-	templatesNames := []string{"cmd/web/templates/base.gohtml", "cmd/web/templates/styles.gohtml"}
-	templatesNames = append(templatesNames, "cmd/web/templates/"+tpl)
+	templatesPath := os.Getenv("TEMPLATES_PATH")
+	if templatesPath == "" {
+		cwd, _ := os.Getwd()
+		templatesPath = path.Join(cwd, "templates")
+	}
+	templatesNames := []string{path.Join(templatesPath, "base.gohtml"),
+		path.Join(templatesPath, "styles.gohtml")}
+	templatesNames = append(templatesNames, path.Join(templatesPath, tpl))
 	templates := template.Must(template.ParseFiles(templatesNames...))
 	return templates.ExecuteTemplate(w, tpl, data)
 }
