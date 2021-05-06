@@ -1,0 +1,42 @@
+version: "3.7"
+
+volumes:
+  dbdata_postgres:
+
+services:
+  db:
+    image: postgres:12-alpine
+    restart: unless-stopped
+    volumes:
+      - dbdata_postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=go_rezka
+      - POSTGRES_PASSWORD=pass
+    ports:
+      - 5433:5432
+
+  web:
+    image: go_rezka:local
+    restart: unless-stopped
+    build:
+        context: .
+        dockerfile: Dockerfile
+    environment:
+        DATABASE_URL: postgresql://postgres:pass@db:5432/go_rezka
+    command: web
+    ports:
+        - "8080:8000"
+    depends_on:
+        - db
+
+  collector:
+    image: go_rezka:local
+    restart: unless-stopped
+    build:
+        context: .
+        dockerfile: Dockerfile
+    environment:
+        DATABASE_URL: postgresql://postgres:pass@db:5432/go_rezka
+    command: collector
+    depends_on:
+        - db

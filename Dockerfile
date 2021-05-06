@@ -16,3 +16,4 @@ COPY --from=builder /build/collector /usr/local/bin/
 COPY --from=builder /build/web /usr/local/bin/
 COPY templates /usr/local/share/go_rezka/templates
 ENV TEMPLATES_PATH=/usr/local/share/go_rezka/templates
+EXPOSE 8000
