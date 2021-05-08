@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	"strconv"
 )
 
 const DefaultVideosBatch = 12
@@ -109,7 +108,11 @@ func ListVideos(page int, genreId int, q string) (videos []Video, err error) {
 		sql = sql + fmt.Sprintf(" AND videos.name ilike $%v ", len(params))
 	}
 
-	sql = sql + " ORDER BY videos.rating DESC LIMIT " + strconv.Itoa(DefaultVideosBatch)
+	sql = sql + " ORDER BY videos.rating DESC "
+
+	offset := page*DefaultVideosBatch - DefaultVideosBatch
+
+	sql = sql + fmt.Sprintf(" LIMIT  %v OFFSET %v", DefaultVideosBatch, offset)
 
 	err = db.Select(&videos, sql, params...)
 	if err != nil {
