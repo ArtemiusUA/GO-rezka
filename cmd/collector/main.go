@@ -18,7 +18,6 @@ func main() {
 	}
 
 	baseCollector := colly.NewCollector(
-		// Visit only domains: coursera.org, www.coursera.org
 		colly.AllowedDomains("rezka.ag", "www.rezka.ag"),
 		colly.CacheDir("./cache"),
 		colly.URLFilters(
