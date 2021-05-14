@@ -5,23 +5,16 @@
     {{if not .Video.Video_urls}}
         <div>Error: no video urls are available!!!</div>
     {{end}}
-    {{range .VideoUrls}}
-        {{.Mp4url}}
-        <video id="video"
-               poster="{{$.Video.Image_url}}"
-               controls style="background:black">
+    <video id="video"
+           poster="{{.Video.Image_url}}"
+           controls style="background:black">
+        {{range .VideoUrls}}
             <source label="{{.Quality}}/Mp4url" src="{{.Mp4url}}" type="video/mp4"/>
-        </video>
-    {{end}}
-    {{range .VideoUrls}}
-        {{.M3u8url}}
-        <video id="video"
-               poster="{{$.Video.Image_url}}"
-               controls style="background:black">
+        {{end}}
+        {{range .VideoUrls}}
             <source label="{{.Quality}}/M3u8url" src="{{.M3u8url}}" type="video/mp4"/>
-        </video>
-    {{end}}
-
+        {{end}}
+    </video>
     <div class="video-description">
         {{.Video.Description}}
     </div>
