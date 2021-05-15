@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"go_rezka/internal/helpers"
+	"go_rezka/internal/parsing"
 	"go_rezka/internal/storage"
 	"net/http"
 	"os"
@@ -36,6 +38,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", index)
+	router.HandleFunc("/videos/{id:[0-9]+}/refresh", refreshVideo)
 	router.HandleFunc("/videos/{id:[0-9]+}", video)
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
@@ -107,6 +110,29 @@ func video(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		helpers.InternalError(w, err)
 	}
+}
+
+func refreshVideo(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	videoId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		helpers.InternalError(w, err)
+		return
+	}
+
+	video, err := storage.GetVideo(videoId)
+	if err != nil {
+		helpers.InternalError(w, err)
+		return
+	}
+
+	videoCollector := parsing.CreateVideoCollector()
+	err = videoCollector.Visit(video.Url)
+	if err != nil {
+		helpers.InternalError(w, err)
+	}
+
+	http.Redirect(w, req, fmt.Sprintf("/videos/%v", video.Id), http.StatusFound)
 }
 
 func render(w http.ResponseWriter, tpl string, data interface{}) error {

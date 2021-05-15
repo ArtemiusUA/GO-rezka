@@ -15,6 +15,9 @@
             <source label="{{.Quality}}/M3u8url" src="{{.M3u8url}}" type="video/mp4"/>
         {{end}}
     </video>
+    <div class="refresh-video">
+        <a href="/videos/{{.Video.Id}}/refresh">&#8635;</a>
+    </div>
     <div class="video-description">
         {{.Video.Description}}
     </div>
