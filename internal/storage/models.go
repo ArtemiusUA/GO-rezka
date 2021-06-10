@@ -22,6 +22,12 @@ type Video struct {
 	Video_urls  types.JSONText
 }
 
+type Part struct {
+	Id         uint
+	Name       string
+	Video_urls types.JSONText
+}
+
 type VideoUrl struct {
 	Quality string `json:"quality"`
 	Mp4url  string `json:"mp4Url"`
@@ -30,6 +36,15 @@ type VideoUrl struct {
 
 func (video Video) GetUrls() (urls []VideoUrl, err error) {
 	err = json.Unmarshal([]byte(video.Video_urls), &urls)
+	if err != nil {
+		return nil, err
+	}
+	helpers.ReverseAny(urls)
+	return urls, nil
+}
+
+func (part Part) GetUrls() (urls []VideoUrl, err error) {
+	err = json.Unmarshal([]byte(part.Video_urls), &urls)
 	if err != nil {
 		return nil, err
 	}

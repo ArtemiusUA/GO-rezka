@@ -53,7 +53,20 @@ func InitDB() error {
 			rating double precision,
 			video_urls json
 		);
-			
+		
+		create table if not exists videos_parts
+		(
+			id serial not null
+				constraint videos_parts_pkey
+					primary key,
+			video_id integer not null
+				constraint videos_parts_video_id_fkey
+					references videos,
+			name varchar(256),
+			video_urls json,
+		    unique(video_id, name) 
+		);
+
 		create table if not exists videos_genres
 		(
 			video_id integer not null

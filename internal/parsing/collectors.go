@@ -2,13 +2,18 @@ package parsing
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gocolly/colly/v2"
 	"github.com/jmoiron/sqlx/types"
 	log "github.com/sirupsen/logrus"
 	"go_rezka/internal/storage"
+	"io/ioutil"
+	"net/http"
+	urlPackage "net/url"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func CreateBaseCollector() *colly.Collector {
@@ -62,16 +67,7 @@ func CreateVideoCollector() *colly.Collector {
 			return
 		}
 		streams := string(streamsContent[1])
-		parts := strings.Split(streams, ",")
-		var urls []storage.VideoUrl
-		for _, p := range parts {
-			firstPart := strings.Split(p, " or ")[0]
-			mp4url := strings.ReplaceAll(strings.Split(p, " or ")[1], "\\", "")
-			qualityPre := strings.Split(firstPart, "]")[0]
-			m3u8url := strings.ReplaceAll(strings.Split(firstPart, "]")[1], "\\", "")
-			quality := qualityPre[1:len(qualityPre)]
-			urls = append(urls, storage.VideoUrl{quality, mp4url, m3u8url})
-		}
+		urls := parseUrls(streams)
 
 		urlsJSONText, _ := json.Marshal(urls)
 
@@ -107,10 +103,78 @@ func CreateVideoCollector() *colly.Collector {
 
 		log.Infof("Parsed video: %v", url)
 
+		e.ForEach("#translators-list li", func(i int, e *colly.HTMLElement) {
+			go parsePart(e, url, video)
+		})
+
 	})
 	videoCollector.OnError(func(r *colly.Response, err error) {
 		log.Errorf("Error parsing: %v, %v", r.Request.URL, err)
 	})
 
 	return videoCollector
+}
+
+func parsePart(e *colly.HTMLElement, url string, video storage.Video) {
+	id := e.Attr("data-id")
+	title := e.Attr("title")
+	translatorId := e.Attr("data-translator_id")
+	isCamrip := e.Attr("data-camrip")
+	isAds := e.Attr("data-ads")
+	isDirector := e.Attr("data-director")
+	action := "get_movie"
+	partUrl := fmt.Sprint("https://rezka.ag/ajax/get_cdn_series/?t=",
+		time.Now().UnixNano()/int64(time.Millisecond))
+	resp, err := http.PostForm(
+		partUrl,
+		urlPackage.Values{
+			"id":            {id},
+			"translator_id": {translatorId},
+			"is_director":   {isDirector},
+			"is_camrip":     {isCamrip},
+			"is_ads":        {isAds},
+			"action":        {action},
+		},
+	)
+	if err != nil {
+		log.Errorf("Error parsing part: %v, %v", partUrl, err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Errorf("Error parsing part: %v, %v", partUrl, err)
+	}
+	streamsContent := regexp.MustCompile(`url\":\"((.)+?)\",`).FindSubmatch(body)
+	if streamsContent == nil || len(streamsContent) == 0 {
+		log.Warningf("No streams for: %v", url)
+		return
+	}
+	streams := string(streamsContent[1])
+	urls := parseUrls(streams)
+	urlsJSONText, _ := json.Marshal(urls)
+	part := storage.Part{
+		0,
+		title,
+		types.JSONText(urlsJSONText),
+	}
+	err = storage.SaveVideoPart(&video, &part)
+	if err != nil {
+		log.Error("Error: %v", err)
+		return
+	}
+	log.Infof("Parsed part: %v", partUrl)
+}
+
+func parseUrls(urlsText string) *[]storage.VideoUrl {
+	parts := strings.Split(urlsText, ",")
+	var urls []storage.VideoUrl
+	for _, p := range parts {
+		firstPart := strings.Split(p, " or ")[0]
+		mp4url := strings.ReplaceAll(strings.Split(p, " or ")[1], "\\", "")
+		qualityPre := strings.Split(firstPart, "]")[0]
+		m3u8url := strings.ReplaceAll(strings.Split(firstPart, "]")[1], "\\", "")
+		quality := qualityPre[1:len(qualityPre)]
+		urls = append(urls, storage.VideoUrl{quality, mp4url, m3u8url})
+	}
+	return &urls
 }

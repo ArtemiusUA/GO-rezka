@@ -85,6 +85,25 @@ func SaveVideoGenre(video *Video, genre *Genre) (err error) {
 	return nil
 }
 
+func SaveVideoPart(video *Video, part *Part) (err error) {
+	db, err := GetDB()
+	if err != nil {
+		return
+	}
+
+	sql := `INSERT INTO videos_parts(video_id, name, video_urls) 
+			VALUES ($1, $2, $3) ON CONFLICT (video_id, name) DO 
+			UPDATE SET 
+				video_urls = EXCLUDED.video_urls
+			`
+	_, err = db.Exec(sql, video.Id, part.Name, part.Video_urls)
+	if err != nil {
+		return
+	}
+
+	return nil
+}
+
 func ListVideos(page int, genreId int, q string) (videos []Video, err error) {
 	db, err := GetDB()
 	if err != nil {
