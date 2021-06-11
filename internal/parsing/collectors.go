@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -103,9 +104,12 @@ func CreateVideoCollector() *colly.Collector {
 
 		log.Infof("Parsed video: %v", url)
 
+		waitGroup := sync.WaitGroup{}
 		e.ForEach("#translators-list li", func(i int, e *colly.HTMLElement) {
-			go parsePart(e, url, video)
+			waitGroup.Add(1)
+			go parsePart(e, url, video, &waitGroup)
 		})
+		waitGroup.Wait()
 
 	})
 	videoCollector.OnError(func(r *colly.Response, err error) {
@@ -115,7 +119,8 @@ func CreateVideoCollector() *colly.Collector {
 	return videoCollector
 }
 
-func parsePart(e *colly.HTMLElement, url string, video storage.Video) {
+func parsePart(e *colly.HTMLElement, url string, video storage.Video, group *sync.WaitGroup) {
+	defer group.Done()
 	id := e.Attr("data-id")
 	title := e.Attr("title")
 	translatorId := e.Attr("data-translator_id")
@@ -162,7 +167,7 @@ func parsePart(e *colly.HTMLElement, url string, video storage.Video) {
 		log.Error("Error: %v", err)
 		return
 	}
-	log.Infof("Parsed part: %v", partUrl)
+	log.Infof("Parsed part:%v,  %v", video.Url, title)
 }
 
 func parseUrls(urlsText string) *[]storage.VideoUrl {
