@@ -28,6 +28,7 @@ type IndexTemplateData struct {
 type VideoTemplateData struct {
 	Video     storage.Video
 	VideoUrls []storage.VideoUrl
+	Parts     []storage.Part
 }
 
 func main() {
@@ -104,7 +105,14 @@ func video(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Warningf("Error parsing urls for: %v", videoId)
 	}
-	data := VideoTemplateData{Video: video, VideoUrls: urls}
+
+	parts, err := storage.ListVideoParts(videoId)
+	if err != nil {
+		helpers.InternalError(w, err)
+		return
+	}
+
+	data := VideoTemplateData{Video: video, VideoUrls: urls, Parts: parts}
 
 	err = render(w, "video.gohtml", data)
 	if err != nil {

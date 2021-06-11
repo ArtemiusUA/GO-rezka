@@ -191,3 +191,19 @@ func GetVideo(videoId int) (video Video, err error) {
 
 	return
 }
+
+func ListVideoParts(videoId int) (parts []Part, err error) {
+	db, err := GetDB()
+	if err != nil {
+		return
+	}
+
+	sql := `SELECT id, name, video_urls FROM videos_parts WHERE video_id = $1`
+
+	err = db.Select(&parts, sql, videoId)
+	if err != nil {
+		return
+	}
+
+	return
+}

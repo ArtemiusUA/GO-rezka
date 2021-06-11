@@ -3,7 +3,6 @@ package storage
 import (
 	"encoding/json"
 	"github.com/jmoiron/sqlx/types"
-	"go_rezka/internal/helpers"
 )
 
 type Genre struct {
@@ -39,7 +38,6 @@ func (video Video) GetUrls() (urls []VideoUrl, err error) {
 	if err != nil {
 		return nil, err
 	}
-	helpers.ReverseAny(urls)
 	return urls, nil
 }
 
@@ -48,6 +46,5 @@ func (part Part) GetUrls() (urls []VideoUrl, err error) {
 	if err != nil {
 		return nil, err
 	}
-	helpers.ReverseAny(urls)
 	return urls, nil
 }

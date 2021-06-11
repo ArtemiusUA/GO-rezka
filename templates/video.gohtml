@@ -15,10 +15,21 @@
             <source label="{{.Quality}}/M3u8url" src="{{.M3u8url}}" type="video/mp4"/>
         {{end}}
     </video>
-    <div class="refresh-video">
-        <a href="/videos/{{.Video.Id}}/refresh">&#8635;</a>
+    <div class="video-parts">
+        <ul>
+            {{range .Parts}}
+                <li><a href="#" data-id="{{.Id}}">{{.Name}}</a></li>
+            {{end}}
+            <li><a href="/videos/{{.Video.Id}}/refresh">&#8635;Reparse</a></li>
+        </ul>
     </div>
     <div class="video-description">
         {{.Video.Description}}
     </div>
+    <script>
+        const parts = {}
+        {{range .Parts}}
+        parts[{{.Id}}] = {{.Video_urls}}
+        {{end}}
+    </script>
 {{end}}

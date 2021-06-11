@@ -11,6 +11,7 @@ import (
 	"net/http"
 	urlPackage "net/url"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -181,5 +182,24 @@ func parseUrls(urlsText string) *[]storage.VideoUrl {
 		quality := qualityPre[1:len(qualityPre)]
 		urls = append(urls, storage.VideoUrl{quality, mp4url, m3u8url})
 	}
+	sortByQuality(urls)
 	return &urls
+}
+
+func sortByQuality(urls []storage.VideoUrl) {
+	sort.Slice(urls, func(i, j int) bool {
+		iC := strings.ReplaceAll(urls[i].Quality, "p", "")
+		iC = strings.ReplaceAll(iC, " Ultra", "0")
+		iV, err := strconv.Atoi(iC)
+		if err != nil {
+			return false
+		}
+		jC := strings.ReplaceAll(urls[j].Quality, "p", "")
+		jC = strings.ReplaceAll(jC, " Ultra", "0")
+		jV, err := strconv.Atoi(jC)
+		if err != nil {
+			return false
+		}
+		return iV > jV
+	})
 }
