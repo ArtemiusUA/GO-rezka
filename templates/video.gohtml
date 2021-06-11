@@ -29,7 +29,26 @@
     <script>
         const parts = {}
         {{range .Parts}}
-        parts[{{.Id}}] = {{.Video_urls}}
+        parts["{{.Id}}"] = {{.Video_urls}}
         {{end}}
+        const video = document.getElementById('video');
+
+        document.querySelectorAll('.video-parts a').forEach(partEl => {
+            partEl.addEventListener('click', function (e) {
+                e.preventDefault();
+                video.pause();
+                const part = parts[e.target.dataset.id];
+                document.querySelectorAll("source").forEach(el => el.remove());
+                part.forEach(el => {
+                    const source = document.createElement('source');
+                    source.setAttribute("src", el.mp4Url);
+                    source.setAttribute("label", el.quality + "/Mp4url");
+                    source.setAttribute("type", "video/mp4");
+                    video.appendChild(source);
+                });
+                video.load();
+                video.play();
+            })
+        })
     </script>
 {{end}}
