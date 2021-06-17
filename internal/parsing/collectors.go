@@ -56,8 +56,13 @@ func CreateVideoCollector() *colly.Collector {
 		imageUrl := e.ChildAttr("[itemprop=image]", "src")
 		genres_names := e.ChildTexts("[itemprop=genre]")
 		var genres []storage.Genre
+		videoType := "films"
+		typeMatch := regexp.MustCompile(`\/(\w+)\/`).FindSubmatch([]byte(e.Request.URL.Path))
+		if typeMatch != nil && len(typeMatch) > 0 {
+			videoType = string(typeMatch[1])
+		}
 		for _, g := range genres_names {
-			genres = append(genres, storage.Genre{Name: g})
+			genres = append(genres, storage.Genre{Type: videoType, Name: g})
 		}
 
 		description := e.ChildText(".b-post__description_text")

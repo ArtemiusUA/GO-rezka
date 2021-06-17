@@ -12,14 +12,14 @@ func SaveGenre(genre *Genre) (err error) {
 		return
 	}
 
-	sql := "INSERT INTO genres(name) VALUES (:name) ON CONFLICT (name) DO NOTHING"
+	sql := "INSERT INTO genres(type, name) VALUES (:type, :name) ON CONFLICT (type, name) DO NOTHING"
 	_, err = db.NamedExec(sql, genre)
 	if err != nil {
 		return
 	}
 
-	sql = "SELECT * FROM genres WHERE name = $1 LIMIT 1"
-	err = db.Get(genre, sql, genre.Name)
+	sql = "SELECT * FROM genres WHERE type = $1 and name = $2 LIMIT 1"
+	err = db.Get(genre, sql, genre.Type, genre.Name)
 
 	return
 }

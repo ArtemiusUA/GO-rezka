@@ -7,6 +7,7 @@ import (
 
 type Genre struct {
 	Id   uint
+	Type string
 	Name string
 }
 

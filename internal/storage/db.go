@@ -33,9 +33,9 @@ func InitDB() error {
 			id serial not null
 				constraint genres_pkey
 					primary key,
-			name varchar(256)
-				constraint genres_name_key
-					unique
+			type varchar(256),
+			name varchar(256),
+			unique(type, name)
 		);
 			
 		create table if not exists videos
