@@ -1,9 +1,9 @@
 package pages
 
 import (
+	"github.com/ArtemiusUA/GO-rezka/internal/helpers"
+	"github.com/ArtemiusUA/GO-rezka/internal/storage"
 	"github.com/gorilla/mux"
-	"go_rezka/internal/helpers"
-	"go_rezka/internal/storage"
 	"net/http"
 	"strconv"
 )

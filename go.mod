@@ -1,4 +1,4 @@
-module go_rezka
+module github.com/ArtemiusUA/GO-rezka
 
 go 1.13
 

@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/ArtemiusUA/GO-rezka/internal/parsing"
+	"github.com/ArtemiusUA/GO-rezka/internal/storage"
 	log "github.com/sirupsen/logrus"
-	"go_rezka/internal/parsing"
-	"go_rezka/internal/storage"
 	"os"
 )
 

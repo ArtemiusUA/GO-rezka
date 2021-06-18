@@ -3,10 +3,10 @@ package parsing
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ArtemiusUA/GO-rezka/internal/storage"
 	"github.com/gocolly/colly/v2"
 	"github.com/jmoiron/sqlx/types"
 	log "github.com/sirupsen/logrus"
-	"go_rezka/internal/storage"
 	"io/ioutil"
 	"net/http"
 	urlPackage "net/url"

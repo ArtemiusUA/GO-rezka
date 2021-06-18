@@ -2,11 +2,11 @@ package pages
 
 import (
 	"fmt"
+	"github.com/ArtemiusUA/GO-rezka/internal/helpers"
+	"github.com/ArtemiusUA/GO-rezka/internal/parsing"
+	"github.com/ArtemiusUA/GO-rezka/internal/storage"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"go_rezka/internal/helpers"
-	"go_rezka/internal/parsing"
-	"go_rezka/internal/storage"
 	"net/http"
 	"strconv"
 )

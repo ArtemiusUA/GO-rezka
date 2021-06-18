@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/ArtemiusUA/GO-rezka/internal/pages"
+	"github.com/ArtemiusUA/GO-rezka/internal/storage"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-	"go_rezka/internal/pages"
-	"go_rezka/internal/storage"
 	"net/http"
 )
 
