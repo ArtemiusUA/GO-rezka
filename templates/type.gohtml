@@ -1,0 +1,69 @@
+{{template "base" .}}
+{{define "title"}}GO rezka >> {{.VideoTypeTitle}}{{end}}
+{{define "header"}}
+    <div class="nav header">
+        <h1 class="nav-logo">
+            <a href="/">GO rezka</a>
+            <span>\</span>
+            <a href="/{{.VideoType}}/">{{.VideoTypeTitle}}</a>
+        </h1>
+        <form action="/{{.VideoType}}/" method="get">
+            <div class="nav-item"><input name="q" type="text" placeholder="Search..."></div>
+        </form>
+    </div>
+{{end}}
+{{define "content"}}
+    <div class="nav right genres">
+        {{range .Genres}}
+        <h6 class="nav-item {{if eq .Id $.GenreId}}active-genre{{end}}"><a href="/{{.Type}}/?genre_id={{.Id}}">{{ .Name }}</a></h6>
+        {{end}}
+    </div>
+    {{if .Q }}
+        <div class="search-q">
+            <h4>Search results for: {{.Q}} <a href="/">(clear...)</a></h4>
+        </div>
+    {{end}}
+    <div class="videos">
+        {{range .Videos}}
+        <div class="video-item">
+            <a href="/videos/{{.Id}}">
+                <img src="{{.Image_url}}">
+                <div class="name">
+                    {{.Name}}
+                </div>
+            </a>
+        </div>
+        {{end}}
+    </div>
+    <div class="pages text-center">
+        <h5>
+            {{if gt .Page  1 }}
+                {{if .GenreId }}
+                    <a href="/{{.VideoType}}/?genre_id={{.GenreId}}&page={{.PrevPage}}">&lt;&lt;</a>
+                {{else}}
+                    {{if .Q}}
+                        <a href="/{{.VideoType}}/?q={{.Q}}&page={{.PrevPage}}">&lt;&lt;</a>
+                    {{else}}
+                        <a href="/{{.VideoType}}/?page={{.PrevPage}}">&lt;&lt;</a>
+                    {{end}}
+                {{ end }}
+            {{else}}
+            &lt;&lt;
+            {{ end }}
+            {{.Page}} / {{.Pages}}
+            {{if lt .Page  .Pages}}
+                {{if .GenreId}}
+                    <a href="/{{.VideoType}}/?genre_id={{.GenreId}}&page={{.NextPage}}">&gt;&gt;</a>
+                {{else}}
+                    {{if .Q}}
+                    <a href="/{{.VideoType}}/?q={{ .Q }}&page={{.NextPage}}">&gt;&gt;</a>
+                    {{else}}
+                    <a href="/{{.VideoType}}/?page={{.NextPage}}">&gt;&gt;</a>
+                    {{end}}
+                {{ end }}
+            {{else}}
+            &gt;&gt;
+            {{end}}
+        </h5>
+    </div>
+{{end}}

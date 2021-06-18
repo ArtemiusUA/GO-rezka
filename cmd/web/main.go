@@ -15,20 +15,40 @@ import (
 )
 
 type IndexTemplateData struct {
-	GenreId  int
-	Q        string
-	Page     int
-	PrevPage int
-	NextPage int
-	Pages    int
-	Genres   []storage.Genre
-	Videos   []storage.Video
+	Q                string
+	Page             int
+	PrevPage         int
+	NextPage         int
+	Pages            int
+	Genres           []storage.Genre
+	Videos           []storage.Video
+	VideoTypesTitles map[string]string
+}
+
+type VideoTypeTemplateData struct {
+	VideoType      string
+	GenreId        int
+	Q              string
+	Page           int
+	PrevPage       int
+	NextPage       int
+	Pages          int
+	Genres         []storage.Genre
+	Videos         []storage.Video
+	VideoTypeTitle string
 }
 
 type VideoTemplateData struct {
 	Video     storage.Video
 	VideoUrls []storage.VideoUrl
 	Parts     []storage.Part
+}
+
+var VideoTypesTitles = map[string]string{
+	"films":      "Фильмы",
+	"cartoons":   "Мультфильмы",
+	"series":     "Сериалы",
+	"animations": "Аниме",
 }
 
 func main() {
@@ -39,12 +59,51 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", index)
+	router.HandleFunc(`/{videoType:\w+}/`, videoType)
 	router.HandleFunc("/videos/{id:[0-9]+}/refresh", refreshVideo)
 	router.HandleFunc("/videos/{id:[0-9]+}", video)
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
 func index(w http.ResponseWriter, req *http.Request) {
+	q := req.URL.Query().Get("q")
+	page, err := strconv.Atoi(req.URL.Query().Get("page"))
+	if page <= 0 {
+		page = 1
+	}
+
+	videos, err := storage.ListVideos(page, "", 0, q)
+	if err != nil {
+		helpers.InternalError(w, err)
+		return
+	}
+
+	pages, err := storage.GetVideosPages("", 0, q)
+	if err != nil {
+		helpers.InternalError(w, err)
+		return
+	}
+
+	data := IndexTemplateData{
+		Q:                q,
+		Page:             page,
+		PrevPage:         page - 1,
+		NextPage:         page + 1,
+		Pages:            pages,
+		Videos:           videos,
+		VideoTypesTitles: VideoTypesTitles,
+	}
+
+	err = render(w, "index.gohtml", data)
+	if err != nil {
+		helpers.InternalError(w, err)
+	}
+}
+
+func videoType(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	videoType := vars["videoType"]
+
 	genreId, err := strconv.Atoi(req.URL.Query().Get("genre_id"))
 	q := req.URL.Query().Get("q")
 	page, err := strconv.Atoi(req.URL.Query().Get("page"))
@@ -52,36 +111,38 @@ func index(w http.ResponseWriter, req *http.Request) {
 		page = 1
 	}
 
-	genres, err := storage.ListGenres()
+	genres, err := storage.ListGenres(videoType)
 	if err != nil {
 		helpers.InternalError(w, err)
 		return
 	}
 
-	videos, err := storage.ListVideos(page, genreId, q)
+	videos, err := storage.ListVideos(page, videoType, genreId, q)
 	if err != nil {
 		helpers.InternalError(w, err)
 		return
 	}
 
-	pages, err := storage.GetVideosPages(genreId, q)
+	pages, err := storage.GetVideosPages(videoType, genreId, q)
 	if err != nil {
 		helpers.InternalError(w, err)
 		return
 	}
 
-	data := IndexTemplateData{
-		GenreId:  genreId,
-		Q:        q,
-		Page:     page,
-		PrevPage: page - 1,
-		NextPage: page + 1,
-		Pages:    pages,
-		Genres:   genres,
-		Videos:   videos,
+	data := VideoTypeTemplateData{
+		VideoType:      videoType,
+		GenreId:        genreId,
+		Q:              q,
+		Page:           page,
+		PrevPage:       page - 1,
+		NextPage:       page + 1,
+		Pages:          pages,
+		Genres:         genres,
+		Videos:         videos,
+		VideoTypeTitle: VideoTypesTitles[videoType],
 	}
 
-	err = render(w, "index.gohtml", data)
+	err = render(w, "type.gohtml", data)
 	if err != nil {
 		helpers.InternalError(w, err)
 	}

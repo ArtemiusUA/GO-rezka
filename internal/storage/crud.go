@@ -24,15 +24,21 @@ func SaveGenre(genre *Genre) (err error) {
 	return
 }
 
-func ListGenres() (genres []Genre, err error) {
+func ListGenres(videoType string) (genres []Genre, err error) {
 	db, err := GetDB()
 	if err != nil {
 		return
 	}
 
-	sql := `SELECT * FROM genres`
+	sql := `SELECT * FROM genres WHERE 1=1 `
 
-	err = db.Select(&genres, sql)
+	var params []interface{}
+	if videoType != "" {
+		params = append(params, videoType)
+		sql = sql + fmt.Sprintf(" AND genres.type = $%v ", len(params))
+	}
+
+	err = db.Select(&genres, sql, params...)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +110,7 @@ func SaveVideoPart(video *Video, part *Part) (err error) {
 	return nil
 }
 
-func ListVideos(page int, genreId int, q string) (videos []Video, err error) {
+func ListVideos(page int, videoType string, genreId int, q string) (videos []Video, err error) {
 	db, err := GetDB()
 	if err != nil {
 		return
@@ -115,7 +121,13 @@ func ListVideos(page int, genreId int, q string) (videos []Video, err error) {
 	sql := `SELECT DISTINCT ON (videos.id, videos.rating) videos.*
 			FROM videos
 			LEFT JOIN videos_genres ON videos.id = videos_genres.video_id
+			LEFT JOIN genres ON genres.id = videos_genres.genre_id
 			WHERE 1=1 `
+
+	if videoType != "" {
+		params = append(params, videoType)
+		sql = sql + fmt.Sprintf(" AND genres.type = $%v ", len(params))
+	}
 
 	if genreId != 0 {
 		params = append(params, genreId)
@@ -141,7 +153,7 @@ func ListVideos(page int, genreId int, q string) (videos []Video, err error) {
 	return
 }
 
-func GetVideosPages(genreId int, q string) (pages int, err error) {
+func GetVideosPages(videoType string, genreId int, q string) (pages int, err error) {
 	db, err := GetDB()
 	if err != nil {
 		return
@@ -152,7 +164,13 @@ func GetVideosPages(genreId int, q string) (pages int, err error) {
 	sql := `SELECT COUNT(DISTINCT videos.id) as qty
 			FROM videos
 			LEFT JOIN videos_genres ON videos.id = videos_genres.video_id
+			LEFT JOIN genres ON genres.id = videos_genres.genre_id
 			WHERE 1=1 `
+
+	if videoType != "" {
+		params = append(params, videoType)
+		sql = sql + fmt.Sprintf(" AND genres.type = $%v ", len(params))
+	}
 
 	if genreId != 0 {
 		params = append(params, genreId)
