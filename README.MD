@@ -17,6 +17,5 @@ And, from this point of view, it plays better there in comparison with same Pyth
 
 ### TODO
 
-- Extend support for all types of the content (for now it scraps only films)
 - Add quality switch
 - Add subtitles
