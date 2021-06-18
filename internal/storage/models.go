@@ -24,6 +24,8 @@ type Video struct {
 
 type Part struct {
 	Id         uint
+	Season_id  uint
+	Episode_id uint
 	Name       string
 	Video_urls types.JSONText
 }

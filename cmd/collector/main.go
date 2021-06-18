@@ -28,6 +28,18 @@ func main() {
 	baseCollector := parsing.CreateBaseCollector()
 	err = baseCollector.Visit("https://rezka.ag/films/")
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+	}
+	err = baseCollector.Visit("https://rezka.ag/cartoons/")
+	if err != nil {
+		log.Error(err)
+	}
+	err = baseCollector.Visit("https://rezka.ag/series/")
+	if err != nil {
+		log.Error(err)
+	}
+	err = baseCollector.Visit("https://rezka.ag/animation/")
+	if err != nil {
+		log.Error(err)
 	}
 }

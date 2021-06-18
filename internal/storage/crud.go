@@ -91,12 +91,12 @@ func SaveVideoPart(video *Video, part *Part) (err error) {
 		return
 	}
 
-	sql := `INSERT INTO videos_parts(video_id, name, video_urls) 
-			VALUES ($1, $2, $3) ON CONFLICT (video_id, name) DO 
+	sql := `INSERT INTO videos_parts(video_id, name, video_urls, season_id, episode_id) 
+			VALUES ($1, $2, $3, $4, $5) ON CONFLICT (video_id, name) DO 
 			UPDATE SET 
 				video_urls = EXCLUDED.video_urls
 			`
-	_, err = db.Exec(sql, video.Id, part.Name, part.Video_urls)
+	_, err = db.Exec(sql, video.Id, part.Name, part.Video_urls, part.Season_id, part.Episode_id)
 	if err != nil {
 		return
 	}
@@ -198,7 +198,10 @@ func ListVideoParts(videoId int) (parts []Part, err error) {
 		return
 	}
 
-	sql := `SELECT id, name, video_urls FROM videos_parts WHERE video_id = $1`
+	sql := `SELECT id, name, video_urls 
+			FROM videos_parts 
+			WHERE video_id = $1 
+			ORDER BY season_id, episode_id, name`
 
 	err = db.Select(&parts, sql, videoId)
 	if err != nil {

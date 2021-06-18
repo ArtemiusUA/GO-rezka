@@ -64,6 +64,8 @@ func InitDB() error {
 					references videos,
 			name varchar(256),
 			video_urls json,
+			season_id integer,
+			episode_id integer,
 		    unique(video_id, name) 
 		);
 

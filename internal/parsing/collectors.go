@@ -18,6 +18,7 @@ import (
 	"time"
 )
 
+// CreateBaseCollector is creating main collector to parse lists of details urls
 func CreateBaseCollector() *colly.Collector {
 	videoCollector := CreateVideoCollector()
 
@@ -28,12 +29,21 @@ func CreateBaseCollector() *colly.Collector {
 			regexp.MustCompile(`https://rezka\.ag/films/$`),
 			regexp.MustCompile(`https://rezka\.ag/films/page/.+/$`),
 			regexp.MustCompile(`https://rezka\.ag/films/.+/.+\.html`),
+			regexp.MustCompile(`https://rezka\.ag/cartoons/$`),
+			regexp.MustCompile(`https://rezka\.ag/cartoons/page/.+/$`),
+			regexp.MustCompile(`https://rezka\.ag/cartoons/.+/.+\.html`),
+			regexp.MustCompile(`https://rezka\.ag/series/$`),
+			regexp.MustCompile(`https://rezka\.ag/series/page/.+/$`),
+			regexp.MustCompile(`https://rezka\.ag/series/.+/.+\.html`),
+			regexp.MustCompile(`https://rezka\.ag/animation/$`),
+			regexp.MustCompile(`https://rezka\.ag/animation/page/.+/$`),
+			regexp.MustCompile(`https://rezka\.ag/animation/.+/.+\.html`),
 		),
 	)
 
 	baseCollector.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		link := e.Attr("href")
-		if regexp.MustCompile(`https://rezka\.ag/films/.+/.+\.html`).Match([]byte(link)) {
+		if regexp.MustCompile(`https://rezka\.ag/(films|cartoons|series|animation)/.+/.+\.html`).Match([]byte(link)) {
 			videoCollector.Visit(link)
 		} else {
 			baseCollector.Visit(link)
@@ -43,6 +53,7 @@ func CreateBaseCollector() *colly.Collector {
 	return baseCollector
 }
 
+// CreateVideoCollector is creating a main collector for detail video pages
 func CreateVideoCollector() *colly.Collector {
 	videoCollector := colly.NewCollector()
 
@@ -68,6 +79,7 @@ func CreateVideoCollector() *colly.Collector {
 		description := e.ChildText(".b-post__description_text")
 		rating, _ := strconv.ParseFloat(e.ChildText(".b-post__info_rates.imdb span"), 64)
 
+		// parsing main default streams from the page itself
 		streamsContent := regexp.MustCompile(`streams\":\"((.)+?)\",`).FindSubmatch(e.Response.Body)
 		if streamsContent == nil || len(streamsContent) == 0 {
 			log.Warningf("No streams for: %v", url)
@@ -110,11 +122,29 @@ func CreateVideoCollector() *colly.Collector {
 
 		log.Infof("Parsed video: %v", url)
 
+		// async fetching and parsing all related resources,
+		// e.g. translations, series, etc.
 		waitGroup := sync.WaitGroup{}
-		e.ForEach("#translators-list li", func(i int, e *colly.HTMLElement) {
-			waitGroup.Add(1)
-			go parsePart(e, url, video, &waitGroup)
-		})
+		if videoType == "films" {
+			e.ForEach("#translators-list li", func(i int, e *colly.HTMLElement) {
+				waitGroup.Add(1)
+				go parseFilmPart(e, url, video, &waitGroup)
+			})
+		} else if videoType == "cartoons" || videoType == "series" || videoType == "animation" {
+			var defaultTranslator string
+			defaultTranslatorMatch := regexp.MustCompile(`initCDNSeriesEvents\(\d+,\s(\d+),`).FindSubmatch(e.Response.Body)
+			if defaultTranslatorMatch != nil && len(defaultTranslatorMatch) > 0 {
+				defaultTranslator = string(defaultTranslatorMatch[1])
+			}
+			e.ForEach("#simple-episodes-tabs li", func(i int, e *colly.HTMLElement) {
+				waitGroup.Add(1)
+				go parseSeriesPart(e, url, defaultTranslator, video, &waitGroup)
+			})
+			// TODO: Add logic for extra translations for series.
+			// If the translation exists for series, then seasons and episodes list
+			// are returned from the endpoint as HTML code string that should be
+			// decoded and parsed.
+		}
 		waitGroup.Wait()
 
 	})
@@ -125,7 +155,7 @@ func CreateVideoCollector() *colly.Collector {
 	return videoCollector
 }
 
-func parsePart(e *colly.HTMLElement, url string, video storage.Video, group *sync.WaitGroup) {
+func parseFilmPart(e *colly.HTMLElement, url string, video storage.Video, group *sync.WaitGroup) {
 	defer group.Done()
 	id := e.Attr("data-id")
 	title := e.Attr("title")
@@ -133,20 +163,20 @@ func parsePart(e *colly.HTMLElement, url string, video storage.Video, group *syn
 	isCamrip := e.Attr("data-camrip")
 	isAds := e.Attr("data-ads")
 	isDirector := e.Attr("data-director")
-	action := "get_movie"
 	partUrl := fmt.Sprint("https://rezka.ag/ajax/get_cdn_series/?t=",
 		time.Now().UnixNano()/int64(time.Millisecond))
-	resp, err := http.PostForm(
-		partUrl,
-		urlPackage.Values{
-			"id":            {id},
-			"translator_id": {translatorId},
-			"is_director":   {isDirector},
-			"is_camrip":     {isCamrip},
-			"is_ads":        {isAds},
-			"action":        {action},
-		},
-	)
+
+	action := "get_movie"
+	data := urlPackage.Values{
+		"id":            {id},
+		"translator_id": {translatorId},
+		"is_director":   {isDirector},
+		"is_camrip":     {isCamrip},
+		"is_ads":        {isAds},
+		"action":        {action},
+	}
+
+	resp, err := http.PostForm(partUrl, data)
 	if err != nil {
 		log.Errorf("Error parsing part: %v, %v", partUrl, err)
 	}
@@ -164,9 +194,70 @@ func parsePart(e *colly.HTMLElement, url string, video storage.Video, group *syn
 	urls := parseUrls(streams)
 	urlsJSONText, _ := json.Marshal(urls)
 	part := storage.Part{
-		0,
-		title,
-		types.JSONText(urlsJSONText),
+		Id:         0,
+		Name:       title,
+		Video_urls: types.JSONText(urlsJSONText),
+		Season_id:  0,
+		Episode_id: 0,
+	}
+	err = storage.SaveVideoPart(&video, &part)
+	if err != nil {
+		log.Error("Error: %v", err)
+		return
+	}
+	log.Infof("Parsed part:%v,  %v", video.Url, title)
+}
+
+func parseSeriesPart(e *colly.HTMLElement, url string, translatorId string, video storage.Video, group *sync.WaitGroup) {
+	defer group.Done()
+	id := e.Attr("data-id")
+	title := e.Text
+	seasonId := e.Attr("data-season_id")
+	episodeId := e.Attr("data-episode_id")
+	partUrl := fmt.Sprint("https://rezka.ag/ajax/get_cdn_series/?t=",
+		time.Now().UnixNano()/int64(time.Millisecond))
+	name := fmt.Sprintf("%v: %v", seasonId, title)
+
+	action := "get_stream"
+	data := urlPackage.Values{
+		"id":            {id},
+		"translator_id": {translatorId},
+		"season":        {seasonId},
+		"episode":       {episodeId},
+		"action":        {action},
+	}
+
+	resp, err := http.PostForm(partUrl, data)
+	if err != nil {
+		log.Errorf("Error parsing part: %v, %v", partUrl, err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Errorf("Error parsing part: %v, %v", partUrl, err)
+	}
+	streamsContent := regexp.MustCompile(`url\":\"((.)+?)\",`).FindSubmatch(body)
+	if streamsContent == nil || len(streamsContent) == 0 {
+		log.Warningf("No streams for: %v", url)
+		return
+	}
+	streams := string(streamsContent[1])
+	urls := parseUrls(streams)
+	urlsJSONText, _ := json.Marshal(urls)
+	seasonIdInt, err := strconv.Atoi(seasonId)
+	if err != nil {
+		seasonIdInt = 0
+	}
+	episodeIdInt, err := strconv.Atoi(episodeId)
+	if err != nil {
+		episodeIdInt = 0
+	}
+	part := storage.Part{
+		Id:         0,
+		Name:       name,
+		Video_urls: types.JSONText(urlsJSONText),
+		Season_id:  uint(seasonIdInt),
+		Episode_id: uint(episodeIdInt),
 	}
 	err = storage.SaveVideoPart(&video, &part)
 	if err != nil {
