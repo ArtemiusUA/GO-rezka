@@ -22,6 +22,11 @@ type VideoTypeTemplateData struct {
 }
 
 func VideoType(w http.ResponseWriter, req *http.Request) {
+	if !helpers.IsAuthorized(req) {
+		http.Redirect(w, req, "/login", http.StatusFound)
+		return
+	}
+
 	vars := mux.Vars(req)
 	videoType := vars["videoType"]
 

@@ -1,0 +1,22 @@
+{{template "base" .}}
+{{define "title"}}GO rezka{{end}}
+{{define "header"}}
+    <div class="login-header">
+        <h3 class="text-center">Authorize</h3>
+    </div>
+{{end}}
+{{define "content"}}
+    <div class="login-form">
+        <form method="post">
+            <div class="row">
+                <div class="col-4"></div>
+                <div class="col-4">
+                    <label for="token">Enter authorization token</label><input type="text" name="token">
+                    <input type="submit" value="Login" placeholder="Enter authorization token">
+                    {{if .Message}}<div class="error-message">{{.Message}}</div>{{end}}
+                </div>
+                <div class="col-4"></div>
+            </div>
+        </form>
+    </div>
+{{end}}

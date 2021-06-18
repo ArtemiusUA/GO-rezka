@@ -18,6 +18,11 @@ type VideoTemplateData struct {
 }
 
 func Video(w http.ResponseWriter, req *http.Request) {
+	if !helpers.IsAuthorized(req) {
+		http.Redirect(w, req, "/login", http.StatusFound)
+		return
+	}
+
 	vars := mux.Vars(req)
 	videoId, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -51,6 +56,11 @@ func Video(w http.ResponseWriter, req *http.Request) {
 }
 
 func RefreshVideo(w http.ResponseWriter, req *http.Request) {
+	if !helpers.IsAuthorized(req) {
+		http.Redirect(w, req, "/login", http.StatusFound)
+		return
+	}
+
 	vars := mux.Vars(req)
 	videoId, err := strconv.Atoi(vars["id"])
 	if err != nil {

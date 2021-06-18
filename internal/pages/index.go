@@ -19,6 +19,11 @@ type IndexTemplateData struct {
 }
 
 func Index(w http.ResponseWriter, req *http.Request) {
+	if !helpers.IsAuthorized(req) {
+		http.Redirect(w, req, "/login", http.StatusFound)
+		return
+	}
+
 	q := req.URL.Query().Get("q")
 	page, err := strconv.Atoi(req.URL.Query().Get("page"))
 	if page <= 0 {

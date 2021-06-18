@@ -16,6 +16,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", pages.Index)
+	router.HandleFunc("/login", pages.Login)
 	router.HandleFunc(`/{videoType:\w+}/`, pages.VideoType)
 	router.HandleFunc("/videos/{id:[0-9]+}/refresh", pages.RefreshVideo)
 	router.HandleFunc("/videos/{id:[0-9]+}", pages.Video)
