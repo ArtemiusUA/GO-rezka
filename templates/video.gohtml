@@ -1,7 +1,7 @@
 {{template "base" .}}
 {{define "title"}}{{.Video.Name}} / {{.Video.Name_orig}}{{end}}
 {{define "content"}}
-    <h3>{{.Video.Name}} / {{.Video.Name_orig}}</h3>
+    <h3>{{.Video.Name}}{{if .Video.Name_orig}} / {{.Video.Name_orig}}{{end}}</h3>
     {{if not .Video.Video_urls}}
         <div>Error: no video urls are available!!!</div>
     {{end}}
@@ -18,7 +18,7 @@
     <div class="video-parts">
         <ul>
             {{range .Parts}}
-                <li><a href="#" data-id="{{.Id}}">{{.Name}}</a></li>
+                <li><a class="part" href="#" data-id="{{.Id}}">{{.Name}}</a></li>
             {{end}}
             <li><a href="/videos/{{.Video.Id}}/refresh">&#8635;Reparse</a></li>
         </ul>
@@ -33,7 +33,7 @@
         {{end}}
         const video = document.getElementById('video');
 
-        document.querySelectorAll('.video-parts a').forEach(partEl => {
+        document.querySelectorAll('.video-parts a.part').forEach(partEl => {
             partEl.addEventListener('click', function (e) {
                 e.preventDefault();
                 video.pause();
