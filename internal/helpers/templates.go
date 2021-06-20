@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"github.com/spf13/viper"
 	"net/http"
 	"os"
 	"path"
@@ -8,7 +9,7 @@ import (
 )
 
 func Render(w http.ResponseWriter, tpl string, data interface{}) error {
-	templatesPath := os.Getenv("TEMPLATES_PATH")
+	templatesPath := viper.GetString("TEMPLATES_PATH")
 	if templatesPath == "" {
 		cwd, _ := os.Getwd()
 		templatesPath = path.Join(cwd, "templates")

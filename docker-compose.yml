@@ -22,7 +22,7 @@ services:
         context: .
         dockerfile: Dockerfile
     environment:
-        DATABASE_URL: postgresql://postgres:pass@db:5432/go_rezka
+        GOREZKA_DATABASE_URL: postgresql://postgres:pass@db:5432/go_rezka
     command: web
     ports:
         - "8080:8000"
@@ -36,7 +36,7 @@ services:
         context: .
         dockerfile: Dockerfile
     environment:
-        DATABASE_URL: postgresql://postgres:pass@db:5432/go_rezka
+        GOREZKA_DATABASE_URL: postgresql://postgres:pass@db:5432/go_rezka
     command: collector
     depends_on:
         - db

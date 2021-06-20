@@ -1,21 +1,16 @@
 package helpers
 
 import (
-	"os"
+	"github.com/spf13/viper"
 	"reflect"
-	"strings"
 )
 
-func IsDebug() bool {
-	debug := strings.ToLower(os.Getenv("DEBUG"))
-	switch debug {
-	case
-		"1",
-		"true",
-		"yes":
-		return true
-	}
-	return false
+func InitConfig() {
+	viper.SetEnvPrefix("GOREZKA")
+	viper.SetDefault("DEBUG", false)
+	viper.SetDefault("DATABASE_URL", "")
+	viper.SetDefault("AUTH_TOKEN", "")
+	viper.AutomaticEnv()
 }
 
 func ReverseAny(s interface{}) {

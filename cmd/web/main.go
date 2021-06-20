@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/ArtemiusUA/GO-rezka/internal/helpers"
 	"github.com/ArtemiusUA/GO-rezka/internal/pages"
 	"github.com/ArtemiusUA/GO-rezka/internal/storage"
 	"github.com/gorilla/mux"
@@ -9,6 +10,8 @@ import (
 )
 
 func main() {
+	helpers.InitConfig()
+
 	err := storage.InitDB()
 	if err != nil {
 		log.Fatal(err)

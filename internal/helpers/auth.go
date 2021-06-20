@@ -1,19 +1,15 @@
 package helpers
 
 import (
+	"github.com/spf13/viper"
 	"net/http"
-	"os"
 )
 
 func IsAuthorized(req *http.Request) bool {
-	authToken := GetAuthToken()
+	authToken := viper.GetString("AUTH_TOKEN")
 	cookie, err := req.Cookie("token")
 	if authToken == "" || err == nil && cookie.Value == authToken {
 		return true
 	}
 	return false
-}
-
-func GetAuthToken() string {
-	return os.Getenv("AUTH_TOKEN")
 }

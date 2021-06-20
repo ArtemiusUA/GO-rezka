@@ -2,6 +2,7 @@ package pages
 
 import (
 	"github.com/ArtemiusUA/GO-rezka/internal/helpers"
+	"github.com/spf13/viper"
 	"net/http"
 )
 
@@ -30,7 +31,7 @@ func Login(w http.ResponseWriter, req *http.Request) {
 		token = req.FormValue("token")
 	}
 
-	if token == helpers.GetAuthToken() {
+	if token == viper.GetString("AUTH_TOKEN") {
 		http.SetCookie(w, &http.Cookie{Name: "token", Value: token, HttpOnly: true})
 		http.Redirect(w, req, "/", http.StatusFound)
 		return
