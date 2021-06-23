@@ -10,6 +10,8 @@ func InitConfig() {
 	viper.SetDefault("DEBUG", false)
 	viper.SetDefault("DATABASE_URL", "")
 	viper.SetDefault("AUTH_TOKEN", "")
+	viper.SetDefault("DOMAINS", []string{})
+	viper.SetDefault("HTTPS", false)
 	viper.AutomaticEnv()
 }
 
