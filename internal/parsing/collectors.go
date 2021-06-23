@@ -44,6 +44,10 @@ func CreateBaseCollector() *colly.Collector {
 		),
 	)
 
+	baseCollector.OnRequest(func(r *colly.Request) {
+		r.Headers.Set("Accept", "*/*")
+	})
+
 	baseCollector.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		link := e.Attr("href")
 		if regexp.MustCompile(`https://rezka\.ag/(films|cartoons|series|animation)/.+/.+\.html`).Match([]byte(link)) {
@@ -61,6 +65,7 @@ func CreateVideoCollector() *colly.Collector {
 	videoCollector := colly.NewCollector(colly.UserAgent(userAgent))
 
 	videoCollector.OnRequest(func(r *colly.Request) {
+		r.Headers.Set("Accept", "*/*")
 		log.Debugf("Visiting: %v", r.URL.String())
 	})
 	videoCollector.OnHTML(".b-post", func(e *colly.HTMLElement) {
