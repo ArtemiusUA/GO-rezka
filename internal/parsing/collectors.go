@@ -18,11 +18,14 @@ import (
 	"time"
 )
 
+const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
+
 // CreateBaseCollector is creating main collector to parse lists of details urls
 func CreateBaseCollector() *colly.Collector {
 	videoCollector := CreateVideoCollector()
 
 	baseCollector := colly.NewCollector(
+		colly.UserAgent(userAgent),
 		colly.AllowedDomains("rezka.ag", "www.rezka.ag"),
 		colly.CacheDir("./cache"),
 		colly.URLFilters(
@@ -55,7 +58,7 @@ func CreateBaseCollector() *colly.Collector {
 
 // CreateVideoCollector is creating a main collector for detail video pages
 func CreateVideoCollector() *colly.Collector {
-	videoCollector := colly.NewCollector()
+	videoCollector := colly.NewCollector(colly.UserAgent(userAgent))
 
 	videoCollector.OnRequest(func(r *colly.Request) {
 		log.Debugf("Visiting: %v", r.URL.String())
