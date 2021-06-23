@@ -90,7 +90,7 @@ func CreateVideoCollector() *colly.Collector {
 		// parsing main default streams from the page itself
 		streamsContent := regexp.MustCompile(`streams\":\"((.)+?)\",`).FindSubmatch(e.Response.Body)
 		if streamsContent == nil || len(streamsContent) == 0 {
-			log.Warningf("No streams for: %v", url)
+			log.Warningf("No streams for: %v, status: %v, headers: %v", url, e.Response.StatusCode, e.Request.Headers)
 			return
 		}
 		streams := string(streamsContent[1])
