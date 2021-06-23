@@ -55,7 +55,8 @@ func serveHTTPS() {
 	server := &http.Server{
 		Addr: ":https",
 		TLSConfig: &tls.Config{
-			GetCertificate: certManager.GetCertificate,
+			GetCertificate:     certManager.GetCertificate,
+			InsecureSkipVerify: true,
 		},
 	}
 
