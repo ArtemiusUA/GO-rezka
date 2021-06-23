@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"github.com/ArtemiusUA/GO-rezka/internal/helpers"
 	"github.com/ArtemiusUA/GO-rezka/internal/pages"
 	"github.com/ArtemiusUA/GO-rezka/internal/storage"
@@ -33,7 +34,7 @@ func main() {
 	if viper.GetBool("HTTPS") {
 		serveHTTPS()
 	} else {
-		log.Fatal(http.ListenAndServe(":8000", router))
+		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", viper.GetInt("PORT")), router))
 	}
 
 }

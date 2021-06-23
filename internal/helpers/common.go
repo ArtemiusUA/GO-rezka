@@ -11,6 +11,7 @@ func InitConfig() {
 	viper.SetDefault("DATABASE_URL", "")
 	viper.SetDefault("AUTH_TOKEN", "")
 	viper.SetDefault("DOMAINS", []string{})
+	viper.SetDefault("PORT", 8000)
 	viper.SetDefault("HTTPS", false)
 	viper.AutomaticEnv()
 }
