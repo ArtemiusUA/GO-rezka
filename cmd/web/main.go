@@ -32,14 +32,14 @@ func main() {
 	router.HandleFunc("/videos/{id:[0-9]+}", pages.Video)
 
 	if viper.GetBool("HTTPS") {
-		serveHTTPS()
+		serveHTTPS(router)
 	} else {
 		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", viper.GetInt("PORT")), router))
 	}
 
 }
 
-func serveHTTPS() {
+func serveHTTPS(handler http.Handler) {
 
 	domains := viper.GetStringSlice("DOMAINS")
 	certManager := autocert.Manager{
@@ -58,6 +58,7 @@ func serveHTTPS() {
 			GetCertificate:     certManager.GetCertificate,
 			InsecureSkipVerify: true,
 		},
+		Handler: handler,
 	}
 
 	log.Printf("Serving http/https for domains: %+v", domains)
