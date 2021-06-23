@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/ArtemiusUA/GO-rezka/internal/storage"
 	"github.com/gocolly/colly/v2"
+	"github.com/gocolly/colly/v2/proxy"
 	"github.com/jmoiron/sqlx/types"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"net/http"
 	urlPackage "net/url"
@@ -44,6 +46,8 @@ func CreateBaseCollector() *colly.Collector {
 		),
 	)
 
+	setProxies(baseCollector)
+
 	baseCollector.OnRequest(func(r *colly.Request) {
 		r.Headers.Set("Accept", "*/*")
 	})
@@ -63,6 +67,8 @@ func CreateBaseCollector() *colly.Collector {
 // CreateVideoCollector is creating a main collector for detail video pages
 func CreateVideoCollector() *colly.Collector {
 	videoCollector := colly.NewCollector(colly.UserAgent(userAgent))
+
+	setProxies(videoCollector)
 
 	videoCollector.OnRequest(func(r *colly.Request) {
 		r.Headers.Set("Accept", "*/*")
@@ -306,4 +312,16 @@ func sortByQuality(urls []storage.VideoUrl) {
 		}
 		return iV > jV
 	})
+}
+
+func setProxies(collector *colly.Collector) {
+	proxies := viper.GetStringSlice("PROXIES")
+	if len(proxies) > 0 {
+		rp, err := proxy.RoundRobinProxySwitcher(proxies...)
+		if err != nil {
+			log.Warningf("Unable to set proxies: %v", err)
+		} else {
+			collector.SetProxyFunc(rp)
+		}
+	}
 }
