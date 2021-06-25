@@ -7,6 +7,7 @@ import (
 	"github.com/ArtemiusUA/GO-rezka/internal/storage"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 )
@@ -77,7 +78,7 @@ func RefreshVideo(w http.ResponseWriter, req *http.Request) {
 	videoCollector := parsing.CreateVideoCollector()
 	err = videoCollector.Visit(video.Url)
 	if err != nil {
-		helpers.InternalError(w, err)
+		log.Error("Unable to parse video: %v", err)
 	}
 
 	http.Redirect(w, req, fmt.Sprintf("/videos/%v", video.Id), http.StatusFound)
