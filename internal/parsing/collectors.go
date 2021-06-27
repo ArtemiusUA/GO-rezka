@@ -81,6 +81,10 @@ func CreateVideoCollector() *colly.Collector {
 		name := e.ChildText(".b-content__main .b-post__title [itemprop=name]")
 		nameOrig := e.ChildText(".b-content__main [itemprop=alternativeHeadline]")
 		url := e.ChildAttr("[itemprop=url]", "content")
+		parsedUrl, err := urlPackage.Parse(url)
+		if err == nil && parsedUrl != nil {
+			url = parsedUrl.Path
+		}
 		imageUrl := e.ChildAttr("[itemprop=image]", "src")
 		genres_names := e.ChildTexts("[itemprop=genre]")
 		var genres []storage.Genre
@@ -118,7 +122,7 @@ func CreateVideoCollector() *colly.Collector {
 			types.JSONText(urlsJSONText),
 		}
 
-		err := storage.SaveVideo(&video)
+		err = storage.SaveVideo(&video)
 		if err != nil {
 			log.Error("Error: %v", err)
 			return

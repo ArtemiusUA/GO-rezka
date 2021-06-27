@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"net/http"
 	"strconv"
 )
@@ -76,7 +77,7 @@ func RefreshVideo(w http.ResponseWriter, req *http.Request) {
 	}
 
 	videoCollector := parsing.CreateVideoCollector()
-	err = videoCollector.Visit(video.Url)
+	err = videoCollector.Visit("https://" + viper.GetString("BASE_DOMAIN") + video.Url)
 	if err != nil {
 		log.Error("Unable to parse video: %v", err)
 	}
