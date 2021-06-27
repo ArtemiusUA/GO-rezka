@@ -14,6 +14,7 @@ func InitConfig() {
 	viper.SetDefault("PORT", 8000)
 	viper.SetDefault("HTTPS", false)
 	viper.SetDefault("PROXIES", "")
+	viper.SetDefault("BASE_DOMAIN", "hdrezka-ag.com")
 	viper.AutomaticEnv()
 }
 

@@ -5,6 +5,7 @@ import (
 	"github.com/ArtemiusUA/GO-rezka/internal/parsing"
 	"github.com/ArtemiusUA/GO-rezka/internal/storage"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"os"
 )
 
@@ -28,20 +29,21 @@ func main() {
 		return
 	}
 
+	baseDomain := viper.GetString("BASE_DOMAIN")
 	baseCollector := parsing.CreateBaseCollector()
-	err = baseCollector.Visit("https://rezka.ag/films/")
+	err = baseCollector.Visit("https://" + baseDomain + "/films/")
 	if err != nil {
 		log.Error(err)
 	}
-	err = baseCollector.Visit("https://rezka.ag/cartoons/")
+	err = baseCollector.Visit("https://" + baseDomain + "/cartoons/")
 	if err != nil {
 		log.Error(err)
 	}
-	err = baseCollector.Visit("https://rezka.ag/series/")
+	err = baseCollector.Visit("https://" + baseDomain + "/series/")
 	if err != nil {
 		log.Error(err)
 	}
-	err = baseCollector.Visit("https://rezka.ag/animation/")
+	err = baseCollector.Visit("https://" + baseDomain + "/animation/")
 	if err != nil {
 		log.Error(err)
 	}

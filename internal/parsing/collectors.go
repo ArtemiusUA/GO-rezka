@@ -26,23 +26,26 @@ const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
 func CreateBaseCollector() *colly.Collector {
 	videoCollector := CreateVideoCollector()
 
+	baseDomain := viper.GetString("BASE_DOMAIN")
+	regexpDomain := strings.ReplaceAll(baseDomain, ".", `\.`)
+
 	baseCollector := colly.NewCollector(
 		colly.UserAgent(userAgent),
-		colly.AllowedDomains("rezka.ag", "www.rezka.ag"),
+		colly.AllowedDomains(baseDomain, "www."+baseDomain),
 		colly.CacheDir("./cache"),
 		colly.URLFilters(
-			regexp.MustCompile(`https://rezka\.ag/films/$`),
-			regexp.MustCompile(`https://rezka\.ag/films/page/.+/$`),
-			regexp.MustCompile(`https://rezka\.ag/films/.+/.+\.html`),
-			regexp.MustCompile(`https://rezka\.ag/cartoons/$`),
-			regexp.MustCompile(`https://rezka\.ag/cartoons/page/.+/$`),
-			regexp.MustCompile(`https://rezka\.ag/cartoons/.+/.+\.html`),
-			regexp.MustCompile(`https://rezka\.ag/series/$`),
-			regexp.MustCompile(`https://rezka\.ag/series/page/.+/$`),
-			regexp.MustCompile(`https://rezka\.ag/series/.+/.+\.html`),
-			regexp.MustCompile(`https://rezka\.ag/animation/$`),
-			regexp.MustCompile(`https://rezka\.ag/animation/page/.+/$`),
-			regexp.MustCompile(`https://rezka\.ag/animation/.+/.+\.html`),
+			regexp.MustCompile(`https://`+regexpDomain+`/films/$`),
+			regexp.MustCompile(`https://`+regexpDomain+`/films/page/.+/$`),
+			regexp.MustCompile(`https://`+regexpDomain+`/films/.+/.+\.html`),
+			regexp.MustCompile(`https://`+regexpDomain+`/cartoons/$`),
+			regexp.MustCompile(`https://`+regexpDomain+`/cartoons/page/.+/$`),
+			regexp.MustCompile(`https://`+regexpDomain+`/cartoons/.+/.+\.html`),
+			regexp.MustCompile(`https://`+regexpDomain+`/series/$`),
+			regexp.MustCompile(`https://`+regexpDomain+`/series/page/.+/$`),
+			regexp.MustCompile(`https://`+regexpDomain+`/series/.+/.+\.html`),
+			regexp.MustCompile(`https://`+regexpDomain+`/animation/$`),
+			regexp.MustCompile(`https://`+regexpDomain+`/animation/page/.+/$`),
+			regexp.MustCompile(`https://`+regexpDomain+`/animation/.+/.+\.html`),
 		),
 	)
 
@@ -54,7 +57,7 @@ func CreateBaseCollector() *colly.Collector {
 
 	baseCollector.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		link := e.Attr("href")
-		if regexp.MustCompile(`https://rezka\.ag/(films|cartoons|series|animation)/.+/.+\.html`).Match([]byte(link)) {
+		if regexp.MustCompile(`https://` + regexpDomain + `/(films|cartoons|series|animation)/.+/.+\.html`).Match([]byte(link)) {
 			videoCollector.Visit(link)
 		} else {
 			baseCollector.Visit(link)
@@ -177,7 +180,7 @@ func parseFilmPart(e *colly.HTMLElement, url string, video storage.Video, group 
 	isCamrip := e.Attr("data-camrip")
 	isAds := e.Attr("data-ads")
 	isDirector := e.Attr("data-director")
-	partUrl := fmt.Sprint("https://rezka.ag/ajax/get_cdn_series/?t=",
+	partUrl := fmt.Sprint("https://"+viper.GetString("BASE_DOMAIN")+"/ajax/get_cdn_series/?t=",
 		time.Now().UnixNano()/int64(time.Millisecond))
 
 	action := "get_movie"
@@ -228,7 +231,7 @@ func parseSeriesPart(e *colly.HTMLElement, url string, translatorId string, vide
 	title := e.Text
 	seasonId := e.Attr("data-season_id")
 	episodeId := e.Attr("data-episode_id")
-	partUrl := fmt.Sprint("https://rezka.ag/ajax/get_cdn_series/?t=",
+	partUrl := fmt.Sprint("https://"+viper.GetString("BASE_DOMAIN")+"/ajax/get_cdn_series/?t=",
 		time.Now().UnixNano()/int64(time.Millisecond))
 	name := fmt.Sprintf("%v: %v", seasonId, title)
 
