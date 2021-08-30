@@ -4,6 +4,7 @@ import (
 	"github.com/ArtemiusUA/GO-rezka/internal/helpers"
 	"github.com/spf13/viper"
 	"net/http"
+	"time"
 )
 
 type LoginTemplateData struct {
@@ -32,7 +33,7 @@ func Login(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if token == viper.GetString("AUTH_TOKEN") {
-		http.SetCookie(w, &http.Cookie{Name: "token", Value: token, HttpOnly: true})
+		http.SetCookie(w, &http.Cookie{Name: "token", Value: token, HttpOnly: true, Expires: time.Now().Add(time.Hour * 24 * 365)})
 		http.Redirect(w, req, "/", http.StatusFound)
 		return
 	} else if token != "" {
